@@ -1,12 +1,14 @@
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class Node extends Thread {
 
     private int nodeID;
     private Hashtable<Integer,Integer> linkCostTable;
     private Hashtable<Integer,Integer> linkBandwithTable;
+    private HashMap<Integer,HashMap<Integer,Integer>> distanceTable;
+    //        new HashMap<Integer,HashMap<Integer,Integer>>();
+    private HashMap<Integer,Integer> bottleNeckBandwitdhTable=
+            new HashMap<Integer,Integer>();
 
     public Node(int nodeID){
         this.nodeID=nodeID;
@@ -14,11 +16,11 @@ public class Node extends Thread {
 
     public Node(int nodeID, Hashtable<Integer,Integer> linkCost, Hashtable<Integer,Integer> linkBandwith){
         this.nodeID=nodeID;
-        this.linkBandwithTable =linkBandwith;
         this.linkCostTable =linkCost;
+        this.linkBandwithTable =linkBandwith;
     }
 
-    public void receiveUpdate(Message m){
+    public synchronized void receiveUpdate(Message m){
 
     }
 
@@ -36,6 +38,27 @@ public class Node extends Thread {
         }
         return nodeString+"\n";
     }
+
+    public void initializeDistanceTable() throws Exception {
+        this.distanceTable=new HashMap<Integer,HashMap<Integer,Integer>>();
+        if(linkCostTable!=null){
+            Set<Map.Entry<Integer,Integer>> entrySet=linkCostTable.entrySet();
+            HashMap<Integer,Integer> distanceVector= new HashMap<Integer,Integer>();
+            for(Map.Entry<Integer,Integer> entry : entrySet){
+                distanceVector.put(entry.getKey(),entry.getValue());
+            }
+            distanceTable.put(getNodeID(),distanceVector);
+        }else{
+            throw new Exception("initialize distancetable error");
+        }
+    }
+
+    public HashMap<Integer,HashMap<Integer,Integer>> getDistanceTable(){
+        return distanceTable;
+    }
+
+
+
     public void run(){
         /*while(true){
             try {
@@ -50,4 +73,44 @@ public class Node extends Thread {
         System.out.println("Node "+nodeID+" threadID"+getId()+" is running ");
 
     }
+
+
+    public int getNodeID() {
+        return nodeID;
+    }
+
+    public void setNodeID(int nodeID) {
+        this.nodeID = nodeID;
+    }
+
+    public Hashtable<Integer, Integer> getLinkCostTable() {
+        return linkCostTable;
+    }
+
+    public void setLinkCostTable(Hashtable<Integer, Integer> linkCostTable) {
+        this.linkCostTable = linkCostTable;
+    }
+
+    public Hashtable<Integer, Integer> getLinkBandwithTable() {
+        return linkBandwithTable;
+    }
+
+    public void setLinkBandwithTable(Hashtable<Integer, Integer> linkBandwithTable) {
+        this.linkBandwithTable = linkBandwithTable;
+    }
+
+    public void setDistanceTable(HashMap<Integer, HashMap<Integer, Integer>> distanceTable) {
+        this.distanceTable = distanceTable;
+    }
+
+    public HashMap<Integer, Integer> getBottleNeckBandwitdhTable() {
+        return bottleNeckBandwitdhTable;
+    }
+
+    public void setBottleNeckBandwitdhTable(HashMap<Integer, Integer> bottleNeckBandwitdhTable) {
+        this.bottleNeckBandwitdhTable = bottleNeckBandwitdhTable;
+    }
+
+
+
 }
