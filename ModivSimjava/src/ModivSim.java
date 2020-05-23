@@ -15,7 +15,13 @@ public class ModivSim {
         System.out.println(nodeMap.toString());
         initializeNodeTreads(nodeMap);
 
+/*        Message m= new Message();
+        HashMap<Integer,Integer> hm= new HashMap<Integer,Integer>();
+        hm.put(3,50);
+        m.setDistanceVector(hm);
+        nodeThreadsTable.get(0).receiveUpdate(m);*/
         System.out.println("finished");
+
 /*        try {
             java.util.concurrent.TimeUnit.SECONDS.sleep(5);
         }catch(InterruptedException e){

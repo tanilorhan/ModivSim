@@ -20,8 +20,28 @@ public class Node extends Thread {
         this.linkBandwithTable =linkBandwith;
     }
 
-    public synchronized void receiveUpdate(Message m){
-
+    public synchronized void receiveUpdate(Message m) throws Exception {
+        if(distanceTable.containsKey(m.getSenderID())) {
+            HashMap<Integer, Integer> neighbourDV = m.getDistanceVector();
+            HashMap<Integer, Integer> ownDistanceVector = distanceTable.get(getNodeID());
+            distanceTable.replace(m.getSenderID(),m.getDistanceVector());
+            for (Map.Entry<Integer, Integer> entry : neighbourDV.entrySet()) {
+                if (ownDistanceVector.containsKey(entry.getKey())) {
+                    int newDistance = entry.getValue() + linkCostTable.get(m.getSenderID());
+                    if (newDistance < ownDistanceVector.get(entry.getKey())) {
+                        ownDistanceVector.replace(entry.getKey(), newDistance);
+                    }
+                } else {
+                    if (linkCostTable.containsKey(entry.getKey())) {
+                        ownDistanceVector.put(entry.getKey(), entry.getValue() + linkCostTable.get(entry.getKey()));
+                    } else {
+                        throw new Exception("Not a neighbour");
+                    }
+                }
+            }
+        }else{
+            throw new Exception("received m from not a neighbour");
+        }
     }
 
     public String toString(){
