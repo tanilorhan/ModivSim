@@ -54,6 +54,7 @@ public class ModivSim {
             ArrayList<int[]> currList=entry.getValue();
             Hashtable<Integer,Integer> currLinkcostTable=new Hashtable<Integer,Integer>();
             Hashtable<Integer,Integer> currLinkbandwidthTable=new Hashtable<Integer,Integer>();
+            currLinkcostTable.put(entry.getKey(),0);
             Node currNode=new Node(entry.getKey());
 
             for(int[] neighbourInfo:currList ){
