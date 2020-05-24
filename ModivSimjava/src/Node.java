@@ -21,7 +21,7 @@ public class Node extends Thread {
     }
 
     public synchronized void receiveUpdate(Message m) throws Exception {
-        if(distanceTable.containsKey(m.getSenderID())) {
+        if(linkCostTable.containsKey(m.getSenderID())) {
             HashMap<Integer, Integer> neighbourDV = m.getDistanceVector();
             HashMap<Integer, Integer> ownDistanceVector = distanceTable.get(getNodeID());
             distanceTable.replace(m.getSenderID(),m.getDistanceVector());
@@ -32,11 +32,7 @@ public class Node extends Thread {
                         ownDistanceVector.replace(entry.getKey(), newDistance);
                     }
                 } else {
-                    if (linkCostTable.containsKey(entry.getKey())) {
-                        ownDistanceVector.put(entry.getKey(), entry.getValue() + linkCostTable.get(entry.getKey()));
-                    } else {
-                        throw new Exception("Not a neighbour");
-                    }
+                    ownDistanceVector.put(entry.getKey(), entry.getValue() + linkCostTable.get(m.getSenderID()));
                 }
             }
         }else{
@@ -44,6 +40,29 @@ public class Node extends Thread {
         }
     }
 
+
+    public synchronized boolean sendUpdate() throws Exception {
+
+        boolean isConverged=false;
+
+        // int bnwd,int recvId,int sendId,HashMap<Integer,Integer> distanceVector
+
+
+        if(isConverged) {
+            return false;
+        }else{
+            for(Map.Entry<Integer,Integer> entry:linkCostTable.entrySet()){
+                int bnwd=linkBandwithTable.get(entry.getKey());
+                int recvId=entry.getKey();
+                int sendId=getNodeID();
+                Message m= new Message(bnwd,recvId,sendId,distanceTable.get(getNodeID()));
+                Node currNeighbour=ModivSim.getNodeThreadsTable().get(entry.getKey());
+                currNeighbour.receiveUpdate(m);
+
+            }
+            return true;
+        }
+    }
     public String toString(){
         String nodeString="nodeID: "+nodeID+"\n";
         Set<Integer> neighbours=linkCostTable.keySet();
@@ -69,7 +88,7 @@ public class Node extends Thread {
             }
             distanceTable.put(getNodeID(),distanceVector);
         }else{
-            throw new Exception("initialize distancetable error");
+            throw new Exception("initialize distancetable error,linkcosttable empty");
         }
     }
 
