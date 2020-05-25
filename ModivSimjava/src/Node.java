@@ -21,19 +21,35 @@ public class Node extends Thread {
     }
 
     public synchronized void receiveUpdate(Message m) throws Exception {
+        boolean isUpdated=false;
         if (linkCostTable.containsKey(m.getSenderID())) {
             HashMap<Integer, Integer> neighbourDV = m.getDistanceVector();
             HashMap<Integer, Integer> ownDistanceVector = distanceTable.get(getNodeID());
-            distanceTable.replace(m.getSenderID(), m.getDistanceVector());
+            if(!distanceTable.containsKey(m.getSenderID())){
+                distanceTable.put(m.getSenderID(),m.getDistanceVector());
+            }else {
+                if (distanceTable.get(m.getSenderID()).equals(neighbourDV)){
+                    System.out.println("no update");
+                    return;
+                }
+                distanceTable.replace(m.getSenderID(), m.getDistanceVector());
+            }
+
             for (Map.Entry<Integer, Integer> entry : neighbourDV.entrySet()) {
                 if (ownDistanceVector.containsKey(entry.getKey())) {
                     int newDistance = entry.getValue() + linkCostTable.get(m.getSenderID());
                     if (newDistance < ownDistanceVector.get(entry.getKey())) {
                         ownDistanceVector.replace(entry.getKey(), newDistance);
+                        isUpdated=true;
                     }
                 } else {
                     ownDistanceVector.put(entry.getKey(), entry.getValue() + linkCostTable.get(m.getSenderID()));
                 }
+            }
+
+            if(isUpdated){
+                System.out.println("Node: "+getNodeID()+" is updated");
+                sendUpdate();
             }
         } else {
             throw new Exception("received m from not a neighbour");
@@ -47,18 +63,18 @@ public class Node extends Thread {
 
         // int bnwd,int recvId,int sendId,HashMap<Integer,Integer> distanceVector
 
-
         if (isConverged) {
             return false;
         } else {
             for (Map.Entry<Integer, Integer> entry : linkCostTable.entrySet()) {
-                int bnwd = linkBandwithTable.get(entry.getKey());
-                int recvId = entry.getKey();
-                int sendId = getNodeID();
-                Message m = new Message(bnwd, recvId, sendId, distanceTable.get(getNodeID()));
-                Node currNeighbour = ModivSim.getNodeThreadsTable().get(entry.getKey());
-                currNeighbour.receiveUpdate(m);
-
+                if(entry.getKey()!=getNodeID()) {
+                    int bnwd = linkBandwithTable.get(entry.getKey());
+                    int recvId = entry.getKey();
+                    int sendId = getNodeID();
+                    Message m = new Message(bnwd, recvId, sendId, distanceTable.get(getNodeID()));
+                    Node currNeighbour = ModivSim.getNodeThreadsTable().get(entry.getKey());
+                    currNeighbour.receiveUpdate(m);
+                }
             }
             return true;
         }
@@ -98,7 +114,7 @@ public class Node extends Thread {
     }
 
 
-    public Hashtable<String, int[]> getForwardingTable() {
+    public synchronized Hashtable<String, int[]> getForwardingTable() {
         HashMap<Integer, Integer> ownDistanceVector = distanceTable.get(getNodeID());
         Hashtable<String, int[]> forwardingTable = new Hashtable<String, int[]>();
         for (Map.Entry<Integer, Integer> ownDV_entry : ownDistanceVector.entrySet()) {
@@ -113,10 +129,10 @@ public class Node extends Thread {
                     if (currNeighDV.containsKey(currDest)) {
                         int currNeighDisttoDestFromSrc = currNeighDV.get(currDest)+linkCostTable.get(currNeighbourId);
                         if (!forwardingTable.containsKey(Integer.toString(currDest))) {
-                            forwardTuple[0] = neighbourEntry.getKey();
+                            forwardTuple[0] = currNeighbourId;
                             forwardingTable.put(Integer.toString(currDest), forwardTuple);
                         } else {
-                            int currForwardTuple[]=forwardingTable.get(currDest);
+                            int currForwardTuple[]=forwardingTable.get(Integer.toString(currDest));
                             int firstForwardNodeID=currForwardTuple[0];
                             int secondForwardNodeID=currForwardTuple[1];
                             int firstDist=distanceTable.get(firstForwardNodeID).get(currDest)+linkCostTable.get(firstForwardNodeID);
@@ -130,6 +146,8 @@ public class Node extends Thread {
                                     currForwardTuple[1]=currNeighbourId;
                                     //forwardingTable.replace(Integer.toString(currDest),currForwardTuple);
                                 }
+                            }else{
+                                currForwardTuple[1]=currNeighbourId;
                             }
                         }
                     }
