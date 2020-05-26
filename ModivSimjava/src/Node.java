@@ -86,7 +86,19 @@ public class Node extends Thread {
             return true;
         }
     }
-
+    public String distanceTabletoStr(){
+        String distanceTableStr=new String("Distance Table\n");
+        for(Map.Entry<Integer,HashMap<Integer,Integer>> dtEntry:distanceTable.entrySet()){
+            HashMap<Integer,Integer> currDistanceVector=dtEntry.getValue();
+            int currId=dtEntry.getKey();
+            distanceTableStr=distanceTableStr.concat(String.format("DV:%2d [",currId));
+            for(Map.Entry<Integer,Integer> distEntry:currDistanceVector.entrySet()){
+                distanceTableStr=distanceTableStr.concat("(to:"+distEntry.getKey()+",dist:"+distEntry.getValue()+")");
+            }
+            distanceTableStr=distanceTableStr.concat("]\n");
+        }
+        return distanceTableStr;
+    }
     public String forwardTabletoStr(){
         Hashtable<String, int[]> forwardTable= getForwardingTable();
         String forwardTableStr=new String("ForwardTable: \n");
@@ -201,7 +213,7 @@ public class Node extends Thread {
         while(true) {
             try {
                 sleep(500);
-                textArea.setText(this.toString()+forwardTabletoStr());
+                textArea.setText(this.toString()+forwardTabletoStr()+distanceTabletoStr());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -215,8 +227,8 @@ public class Node extends Thread {
         int screenHeight=(int)screenSize.getHeight()-100;
         int screenWidth=(int)screenSize.getWidth()-100;
         int widthSum= nodeId*frameWidth;
-        rowInd=(int)Math.floor(widthSum/screenWidth);
-        colPos=(int)widthSum%screenWidth;
+        rowInd=(int)Math.floor((widthSum)/(screenWidth-frameWidth));
+        colPos=(int)((widthSum)%(screenWidth-frameWidth));
         if(rowInd*frameHeight>screenHeight){
             rowInd=0;
         }
@@ -225,7 +237,7 @@ public class Node extends Thread {
     }
 
     public void drawJFrame(){
-        this.frameWidth=300;
+        this.frameWidth=400;
         this.frameHeight=400;
         this.frame=new JFrame("Node: "+getNodeID());
         //frame.setLayout(new GridBagLayout());
@@ -233,7 +245,7 @@ public class Node extends Thread {
         this.textArea =new JTextArea();
         textArea.setFont(new Font("Serif",Font.PLAIN,14));
 
-        textArea.setBounds(50,25,200,300);
+        textArea.setBounds(50,25,frameWidth-100,frameHeight-100);
         textArea.setText(this.toString()+forwardTabletoStr());
         //textArea.setLocation(200,200);
         Point start=calculateFramePos(getNodeID());
