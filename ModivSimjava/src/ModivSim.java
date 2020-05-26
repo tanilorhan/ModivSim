@@ -15,15 +15,36 @@ public class ModivSim {
         System.out.println(nodeMap.toString());
         initializeNodeTreads(nodeMap);
 
+
+
+
+
+        int convergenceNum=3;
+        for(int i=0;i<convergenceNum;i++) {
+            for (Map.Entry<Integer, Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()) {
+                try {
+                    nodeEntry.getValue().sendUpdate();
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
+        for(Map.Entry<Integer,Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()){
+            String out=nodeEntry.getValue().toString();
+            System.out.println(out);
+            String forwardStr=nodeEntry.getValue().forwardTabletoStr();
+            System.out.println(forwardStr);
+        }
+
+        System.out.println("finished");
+        /*
         Timer sendUpdateTimer=new Timer();
         PeriodicSendUpdateTask sendUpdateTask=new PeriodicSendUpdateTask(period);
         sendUpdateTimer.schedule(sendUpdateTask,0,sendUpdateTask.getPeriod());
 
-/*        Message m= new Message();
-        HashMap<Integer,Integer> hm= new HashMap<Integer,Integer>();
-        hm.put(3,50);
-        m.setDistanceVector(hm);
-        nodeThreadsTable.get(0).receiveUpdate(m);*/
         System.out.println("finished");
         while(true){
 
@@ -33,6 +54,16 @@ public class ModivSim {
                 e.printStackTrace();
             }
         }
+
+        */
+
+
+/*        Message m= new Message();
+        HashMap<Integer,Integer> hm= new HashMap<Integer,Integer>();
+        hm.put(3,50);
+        m.setDistanceVector(hm);
+        nodeThreadsTable.get(0).receiveUpdate(m);*/
+
 /*        try {
             java.util.concurrent.TimeUnit.SECONDS.sleep(5);
         }catch(InterruptedException e){
