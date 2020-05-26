@@ -8,12 +8,16 @@ public class ModivSim {
 
     public static void main(String[] args){
         System.out.println("Hello");
-
+        int period=1000;
 
         String filepath="./input/input1.txt";
         HashMap<Integer, ArrayList<int[]>> nodeMap=NodeConstructionHandler.getNodeMapFromText(filepath);
         System.out.println(nodeMap.toString());
         initializeNodeTreads(nodeMap);
+
+        Timer sendUpdateTimer=new Timer();
+        PeriodicSendUpdateTask sendUpdateTask=new PeriodicSendUpdateTask(period);
+        sendUpdateTimer.schedule(sendUpdateTask,0,sendUpdateTask.getPeriod());
 
 /*        Message m= new Message();
         HashMap<Integer,Integer> hm= new HashMap<Integer,Integer>();
@@ -21,7 +25,14 @@ public class ModivSim {
         m.setDistanceVector(hm);
         nodeThreadsTable.get(0).receiveUpdate(m);*/
         System.out.println("finished");
+        while(true){
 
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 /*        try {
             java.util.concurrent.TimeUnit.SECONDS.sleep(5);
         }catch(InterruptedException e){
