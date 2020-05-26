@@ -1,3 +1,5 @@
+import javax.swing.*;
+import java.awt.*;
 import java.util.*;
 
 public class Node extends Thread {
@@ -9,6 +11,11 @@ public class Node extends Thread {
     //        new HashMap<Integer,HashMap<Integer,Integer>>();
     private HashMap<Integer, Integer> bottleNeckBandwitdhTable =
             new HashMap<Integer, Integer>();
+    private JFrame frame;
+    private int frameWidth;
+    private int frameHeight;
+    private JTextArea textArea;
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
     public Node(int nodeID) {
         this.nodeID = nodeID;
@@ -190,10 +197,52 @@ public class Node extends Thread {
             }
             System.out.println("node "+nodeID+ " is running\n");
         }*/
-        System.out.println("Node " + nodeID + " threadID" + getId() + " is running ");
+        drawJFrame();
+        while(true) {
+            try {
+                sleep(500);
+                textArea.setText(this.toString()+forwardTabletoStr());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    public Point calculateFramePos(int nodeId){
+        int rowInd=0;
+        int colPos=0;
+        int screenHeight=(int)screenSize.getHeight()-100;
+        int screenWidth=(int)screenSize.getWidth()-100;
+        int widthSum= nodeId*frameWidth;
+        rowInd=(int)Math.floor(widthSum/screenWidth);
+        colPos=(int)widthSum%screenWidth;
+        if(rowInd*frameHeight>screenHeight){
+            rowInd=0;
+        }
+        return new Point(colPos,rowInd*frameHeight);
 
     }
 
+    public void drawJFrame(){
+        this.frameWidth=300;
+        this.frameHeight=400;
+        this.frame=new JFrame("Node: "+getNodeID());
+        //frame.setLayout(new GridBagLayout());
+        frame.setLayout(null);
+        this.textArea =new JTextArea();
+        textArea.setFont(new Font("Serif",Font.PLAIN,14));
+
+        textArea.setBounds(50,25,200,300);
+        textArea.setText(this.toString()+forwardTabletoStr());
+        //textArea.setLocation(200,200);
+        Point start=calculateFramePos(getNodeID());
+        int startx=(int)start.getX();
+        int starty=(int)start.getY();
+        frame.setBounds(startx,starty,frameWidth,frameHeight);
+        frame.add(textArea);
+        frame.setVisible(true);
+    }
 
     public int getNodeID() {
         return nodeID;

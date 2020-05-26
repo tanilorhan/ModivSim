@@ -14,9 +14,7 @@ public class ModivSim {
         HashMap<Integer, ArrayList<int[]>> nodeMap=NodeConstructionHandler.getNodeMapFromText(filepath);
         System.out.println(nodeMap.toString());
         initializeNodeTreads(nodeMap);
-
-
-
+        startNodeThreads();
 
 
         int convergenceNum=3;
@@ -117,6 +115,13 @@ public class ModivSim {
             nodeThreadsTable.put(currNode.getNodeID(),currNode);
         }
     }
+
+    private static void startNodeThreads(){
+        for(Map.Entry<Integer,Node> nodeEntry:nodeThreadsTable.entrySet()){
+            nodeEntry.getValue().start();
+        }
+    }
+
 
     public static Hashtable<Integer, Node> getNodeThreadsTable() {
         return nodeThreadsTable;
