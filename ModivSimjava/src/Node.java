@@ -80,18 +80,38 @@ public class Node extends Thread {
         }
     }
 
+    public String forwardTabletoStr(){
+        Hashtable<String, int[]> forwardTable= getForwardingTable();
+        String forwardTableStr=new String("ForwardTable: \n");
+        forwardTableStr=forwardTableStr.concat("Dest   |  Forward\n");
+        for(Map.Entry<String,int[]> forwardEntry:forwardTable.entrySet()){
+            forwardTableStr=forwardTableStr.concat(String.format("%7s",forwardEntry.getKey()));
+            forwardTableStr=forwardTableStr.concat("| (");
+            forwardTableStr=forwardTableStr.concat(String.format("%d",forwardEntry.getValue()[0]));
+            forwardTableStr=forwardTableStr.concat(",");
+            forwardTableStr=forwardTableStr.concat(String.format("%d",forwardEntry.getValue()[1]));
+            forwardTableStr=forwardTableStr.concat(")\n");
+        }
+        return forwardTableStr;
+    }
+
     public String toString() {
         String nodeString = "nodeID: " + nodeID + "\n";
         Set<Integer> neighbours = linkCostTable.keySet();
         Iterator<Integer> itr = neighbours.iterator();
         while (itr.hasNext()) {
             Integer next = itr.next();
-            nodeString.concat(next.toString());
-            nodeString.concat(" ");
-            nodeString.concat(linkCostTable.get(next).toString());
-            nodeString.concat(" ");
-            nodeString.concat(linkBandwithTable.get(next).toString());
+            if(next!=getNodeID()) {
+                nodeString=nodeString.concat("(");
+                nodeString=nodeString.concat(Integer.toString(next));
+                nodeString=nodeString.concat(" ");
+                nodeString=nodeString.concat(Integer.toString(linkCostTable.get(next)));
+                nodeString=nodeString.concat(" ");
+                nodeString=nodeString.concat(Integer.toString(linkBandwithTable.get(next)));
+                nodeString=nodeString.concat(")");
+            }
         }
+        //nodeString=nodeString.concat(forwardTabletoStr());
         return nodeString + "\n";
     }
 
