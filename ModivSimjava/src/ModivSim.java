@@ -1,5 +1,4 @@
 import java.util.*;
-import java.util.concurrent.Flow;
 
 public class ModivSim {
 
@@ -41,8 +40,8 @@ public class ModivSim {
 
 
         FlowSim flowSim=new FlowSim(nodeThreadsTable);
-        flowSim.initializeFlow("A",0,3,10);
-        flowSim.initializeFlow("B",2,4,10);
+        flowSim.findFlowPath("A",0,3,10);
+        flowSim.findFlowPath("B",2,4,10);
         System.out.println("finished");
         /*
         Timer sendUpdateTimer=new Timer();
