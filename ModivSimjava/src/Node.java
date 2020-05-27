@@ -91,7 +91,7 @@ public class Node extends Thread {
         for(Map.Entry<Integer,HashMap<Integer,Integer>> dtEntry:distanceTable.entrySet()){
             HashMap<Integer,Integer> currDistanceVector=dtEntry.getValue();
             int currId=dtEntry.getKey();
-            distanceTableStr=distanceTableStr.concat(String.format("DV:%2d [",currId));
+            distanceTableStr=distanceTableStr.concat(String.format("From:%2d [",currId));
             for(Map.Entry<Integer,Integer> distEntry:currDistanceVector.entrySet()){
                 distanceTableStr=distanceTableStr.concat("(to:"+distEntry.getKey()+",dist:"+distEntry.getValue()+")");
             }
