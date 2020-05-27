@@ -40,7 +40,7 @@ public class ModivSim {
 
         System.out.println("Generating flow");
         Flow A = new Flow(nodeThreadsTable.get(0), nodeThreadsTable.get(3), 100);
-        Flow B = new Flow(nodeThreadsTable.get(0), nodeThreadsTable.get(3), 100);
+        Flow B = new Flow(nodeThreadsTable.get(0), nodeThreadsTable.get(3), 200);
         Flow C = new Flow(nodeThreadsTable.get(1), nodeThreadsTable.get(2), 100);
         ArrayList<Flow> flows = new ArrayList<>();
         flows.add(A);
