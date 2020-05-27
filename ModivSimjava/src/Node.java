@@ -27,6 +27,7 @@ public class Node extends Thread {
         this.linkBandwithTable = linkBandwith;
     }
 
+
     public synchronized void receiveUpdate(Message m) throws Exception {
         boolean isUpdated=false;
         if (linkCostTable.containsKey(m.getSenderID())) {
@@ -42,6 +43,7 @@ public class Node extends Thread {
                 distanceTable.replace(m.getSenderID(), m.getDistanceVector());
             }
 
+            /*
             for (Map.Entry<Integer, Integer> entry : neighbourDV.entrySet()) {
                 if (ownDistanceVector.containsKey(entry.getKey())) {
                     int newDistance = entry.getValue() + linkCostTable.get(m.getSenderID());
@@ -56,13 +58,39 @@ public class Node extends Thread {
 
             if(isUpdated){
                 System.out.println("Node: "+getNodeID()+" is updated");
-                sendUpdate();
+                //sendUpdate();
             }
+
+             */
         } else {
             throw new Exception("received m from not a neighbour");
         }
     }
 
+    public HashMap<Integer,HashMap<Integer,Integer>> updateDistanceTable(){
+        HashMap<Integer,HashMap<Integer,Integer>> oldDistanceTable=(HashMap<Integer,HashMap<Integer,Integer>>)distanceTable.clone();
+        HashMap<Integer,Integer> ownDistanceVector=distanceTable.get(getNodeID());
+        for(Map.Entry<Integer,HashMap<Integer,Integer>> dtEntry:distanceTable.entrySet()){
+            int neighbourId=dtEntry.getKey();
+            if(neighbourId!=getNodeID()){
+                HashMap<Integer,Integer> neighbourDV=dtEntry.getValue();
+                for(Map.Entry<Integer,Integer> dvEntry:neighbourDV.entrySet()){
+                    if (ownDistanceVector.containsKey(dvEntry.getKey())) {
+                        int newDistance = dvEntry.getValue() + linkCostTable.get(neighbourId);
+                        if (newDistance < ownDistanceVector.get(dvEntry.getKey())) {
+                            ownDistanceVector.replace(dvEntry.getKey(), newDistance);
+
+                        }
+                    } else {
+                        ownDistanceVector.put(dvEntry.getKey(), dvEntry.getValue() + linkCostTable.get(neighbourId));
+                    }
+                }
+            }
+
+        }
+
+        return oldDistanceTable;
+    }
 
     public synchronized boolean sendUpdate() throws Exception {
 
@@ -83,6 +111,7 @@ public class Node extends Thread {
                     currNeighbour.receiveUpdate(m);
                 }
             }
+            updateDistanceTable();
             return true;
         }
     }
@@ -237,7 +266,7 @@ public class Node extends Thread {
     }
 
     public void drawJFrame(){
-        this.frameWidth=400;
+        this.frameWidth=700;
         this.frameHeight=400;
         this.frame=new JFrame("Node: "+getNodeID());
         //frame.setLayout(new GridBagLayout());
