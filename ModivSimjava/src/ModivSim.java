@@ -17,7 +17,7 @@ public class ModivSim {
         startNodeThreads();
 
 
-        int convergenceNum=3;
+        int convergenceNum=1;
         for(int i=0;i<convergenceNum;i++) {
             for (Map.Entry<Integer, Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()) {
                 try {
@@ -95,7 +95,7 @@ public class ModivSim {
             Hashtable<Integer,Integer> currLinkcostTable=new Hashtable<Integer,Integer>();
             Hashtable<Integer,Integer> currLinkbandwidthTable=new Hashtable<Integer,Integer>();
             currLinkcostTable.put(entry.getKey(),0);
-            Node currNode=new Node(entry.getKey());
+            Node currNode=new Node(entry.getKey(), nodeMap.size());
 
             for(int[] neighbourInfo:currList ){
                 if(neighbourInfo.length!=3){
