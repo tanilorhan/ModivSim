@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.Flow;
 
 public class ModivSim {
 
@@ -17,7 +18,7 @@ public class ModivSim {
         startNodeThreads();
 
 
-        int convergenceNum=3;
+        int convergenceNum=2;
         for(int i=0;i<convergenceNum;i++) {
             for (Map.Entry<Integer, Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()) {
                 try {
@@ -37,6 +38,11 @@ public class ModivSim {
             System.out.println(forwardStr);
         }
 
+
+
+        FlowSim flowSim=new FlowSim(nodeThreadsTable);
+        flowSim.initializeFlow("A",0,3,10);
+        flowSim.initializeFlow("B",2,4,10);
         System.out.println("finished");
         /*
         Timer sendUpdateTimer=new Timer();
