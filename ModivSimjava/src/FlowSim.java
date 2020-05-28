@@ -199,7 +199,7 @@ public class FlowSim extends Thread{
                     nextNodeId = secondForwardNodeId;
                 } else {
                     //System.out.println("Path not available for flow " + label);
-                    break;
+                    return null;
                 }
             } else {
                 forwardNodeAvail = true;
@@ -212,14 +212,15 @@ public class FlowSim extends Thread{
             }
             currNode = nodeThreadsTable.get(nextNodeId);
             if (path.contains(currNode.getNodeID())) {
-                System.out.println("Cycle detected");
-                break;
+                //System.out.println("Cycle detected");
+                return null;
+                //break;
             }
             path.add(currNode.getNodeID());
         }
         //path.add(dest);
         if (forwardNodeAvail) {
-            System.out.println(path.toString());
+            //System.out.println(path.toString());
             return path;
 
         }
