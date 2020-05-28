@@ -174,7 +174,7 @@ public class FlowSim extends Thread{
                     forwardNodeAvail = true;
                     nextNodeId = secondForwardNodeId;
                 } else {
-                    System.out.println("Path not available for flow " + label);
+                    //System.out.println("Path not available for flow " + label);
                     break;
                 }
             } else {

@@ -45,8 +45,10 @@ public class ModivSim {
 
         //flowSim.insertFlow("B",2,4,100);
         //flowSim.insertFlow("D",2,1,50);
-        //flowSim.insertFlow("E",0,3,100);
-        flowSim.insertFlow("F",0,3,100);
+        flowSim.insertFlow("E",0,3,100);
+        flowSim.insertFlow("F",0,3,40);
+        flowSim.insertFlow("G",0,3,40);
+        flowSim.insertFlow("H",0,3,40);
         flowSim.start();
         System.out.println("finished");
         /*
