@@ -11,6 +11,7 @@ public class ModivSim {
         int period=1000;
 
         String filepath="./input/input1.txt";
+        String flowPath="./input/inputFlows.txt";
         HashMap<Integer, ArrayList<int[]>> nodeMap=NodeConstructionHandler.getNodeMapFromText(filepath);
         System.out.println(nodeMap.toString());
         initializeNodeTreads(nodeMap);
@@ -50,7 +51,9 @@ public class ModivSim {
 
 
         FlowSim flowSim=new FlowSim(nodeThreadsTable);
-        flowSim.insertFlow("A",0,3,100);
+       flowSim.readFlowsFromFile(flowPath);
+
+ /*       flowSim.insertFlow("A",0,3,100);
         flowSim.insertFlow("C",0,3,100);
 
         //flowSim.insertFlow("B",2,4,100);
@@ -58,7 +61,7 @@ public class ModivSim {
         flowSim.insertFlow("E",0,3,100);
         flowSim.insertFlow("F",0,3,40);
         flowSim.insertFlow("G",0,3,40);
-        flowSim.insertFlow("H",0,3,40);
+        flowSim.insertFlow("H",0,3,40);*/
         flowSim.start();
         System.out.println("finished");
         /*

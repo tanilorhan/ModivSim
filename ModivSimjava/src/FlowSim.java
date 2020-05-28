@@ -1,6 +1,12 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 
 public class FlowSim extends Thread{
 
@@ -12,6 +18,7 @@ public class FlowSim extends Thread{
     public FlowSim(Hashtable<Integer, Node> nodeThreadsTable) {
         this.nodeThreadsTable = nodeThreadsTable;
     }
+
 
     public void run(){
         int i=0;
@@ -77,6 +84,23 @@ public class FlowSim extends Thread{
             }
         }
     }
+
+    public void readFlowsFromFile(String flowPath){
+        List<String> lineList = new ArrayList<>();
+        Path path = Paths.get(flowPath);
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            lineList = Files.readAllLines(path, StandardCharsets.UTF_8);
+            for(String flow :  lineList){
+                String[] token = flow.split(",");
+                this.insertFlow(token[0], Integer.parseInt(token[1]), Integer.parseInt(token[2]), Integer.parseInt(token[3]));
+            }
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
 
     //also returns flow duration for the path
     public int insertFlowIntoBusyLinkTable(ArrayList<Integer> path, int size) {
