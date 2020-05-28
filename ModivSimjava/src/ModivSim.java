@@ -40,8 +40,9 @@ public class ModivSim {
 
 
         FlowSim flowSim=new FlowSim(nodeThreadsTable);
-        flowSim.findFlowPath("A",0,3,10);
-        flowSim.findFlowPath("B",2,4,10);
+        flowSim.insertFlow("A",0,3,100);
+        flowSim.insertFlow("B",2,4,100);
+        flowSim.start();
         System.out.println("finished");
         /*
         Timer sendUpdateTimer=new Timer();

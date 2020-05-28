@@ -2,17 +2,53 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-public class FlowSim {
+public class FlowSim extends Thread{
 
     private static volatile Hashtable<Integer, Node> nodeThreadsTable;
     //for every node, holds how many seconds the link is busy
     private Hashtable<Integer, HashMap<Integer, Integer>> busyLinkTable = new Hashtable<Integer, HashMap<Integer, Integer>>();
+    private ArrayList<Flow> flowList=new ArrayList<Flow>();
 
     public FlowSim(Hashtable<Integer, Node> nodeThreadsTable) {
         this.nodeThreadsTable = nodeThreadsTable;
     }
 
-    public void insertFlowIntoBusyLinkTable(ArrayList<Integer> path, int size) {
+    public void run(){
+
+        while(true) {
+            for (Flow currFlow : flowList) {
+                System.out.println(activeFlow_toString(currFlow));
+                updateBusyLinkTable(currFlow);
+                currFlow.setRemainDuration(currFlow.getRemainDuration()-1);
+
+//                if(currFlow.getRemainDuration()<=0) {
+//                    flowList.remove(currFlow);
+//                }
+            }
+            flowList.removeIf(flow -> flow.getRemainDuration()<=0);
+
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public void insertFlow(String label,int src,int dest,int size){
+        if(findFlowPath(label,src,dest,size) != null){
+            ArrayList<Integer> path=findFlowPath(label,src,dest,size);
+            int duration=insertFlowIntoBusyLinkTable(path,size);
+            Flow flow=new Flow(label,src,dest,size,path,duration);
+            flowList.add(flow);
+        }else{
+            System.out.println("cannot find a flow path available");
+        }
+    }
+
+    //also returns flow duration for the path
+    public int insertFlowIntoBusyLinkTable(ArrayList<Integer> path, int size) {
         int bottleNeckBnwd = findBottleNeckBandwidthOfPath(path);
         int seconds = (int) Math.ceil((double) size / bottleNeckBnwd);
         Node currNode = nodeThreadsTable.get(path.get(0));
@@ -30,7 +66,7 @@ public class FlowSim {
         for (int i = 1; i < path.size() - 1; i++) {
             currNode = nodeThreadsTable.get(path.get(i));
             if (busyLinkTable.containsKey(currNode.getNodeID())) {
-                if (busyLinkTable.get(currNode.getNodeID()).containsKey(i+1)) {
+                if (busyLinkTable.get(currNode.getNodeID()).containsKey(path.get(i+1))) {
                     busyLinkTable.get(currNode.getNodeID()).replace(path.get(i+1), seconds);
                 } else {
                     busyLinkTable.get(currNode.getNodeID()).put(path.get(i+1), seconds);
@@ -42,7 +78,7 @@ public class FlowSim {
 
         }
 
-
+        return seconds;
     }
 
     public int findBottleNeckBandwidthOfPath(ArrayList<Integer> path) {
@@ -132,5 +168,29 @@ public class FlowSim {
             return path;
         }
         return null;
+    }
+
+    private void updateBusyLinkTable(Flow flow){
+        ArrayList<Integer> path=flow.getPath();
+        for(int i=0;i<path.size()-1;i++){
+            int currNodeId=path.get(i);
+            if(busyLinkTable.containsKey(currNodeId)){
+                HashMap<Integer,Integer> busyLinks=busyLinkTable.get(currNodeId);
+                if(busyLinks.containsKey(path.get(i+1))){
+                    int newDuration=busyLinks.get(path.get(i+1))-1;
+                    busyLinks.replace(i+1,newDuration);
+                    if(newDuration<=0){
+                        busyLinks.remove(i+1);
+                    }
+                }
+            }
+        }
+    }
+
+    public String activeFlow_toString(Flow flow){
+        String activeFlowString=flow.toString();
+        activeFlowString=activeFlowString.concat(" path: "+flow.getPath().toString());
+        activeFlowString=activeFlowString.concat(" remaining duration: "+flow.getRemainDuration()+"s  ");
+        return activeFlowString;
     }
 }
