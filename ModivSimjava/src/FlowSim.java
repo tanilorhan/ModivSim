@@ -234,9 +234,9 @@ public class FlowSim extends Thread{
                 HashMap<Integer,Integer> busyLinks=busyLinkTable.get(currNodeId);
                 if(busyLinks.containsKey(path.get(i+1))){
                     int newDuration=busyLinks.get(path.get(i+1))-1;
-                    busyLinks.replace(i+1,newDuration);
+                    busyLinks.replace(path.get(i+1),newDuration);
                     if(newDuration<=0){
-                        busyLinks.remove(i+1);
+                        busyLinks.remove(path.get(i+1));
                     }
                 }
             }
