@@ -51,7 +51,7 @@ public class ModivSim {
 
 
         FlowSim flowSim=new FlowSim(nodeThreadsTable);
-       flowSim.readFlowsFromFile(flowPath);
+        flowSim.readFlowsFromFile(flowPath);
 
  /*       flowSim.insertFlow("A",0,3,100);
         flowSim.insertFlow("C",0,3,100);
