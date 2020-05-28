@@ -1,3 +1,5 @@
+import javax.swing.*;
+import java.awt.*;
 import java.util.*;
 
 public class Node extends Thread {
@@ -9,6 +11,11 @@ public class Node extends Thread {
     //        new HashMap<Integer,HashMap<Integer,Integer>>();
     private HashMap<Integer, Integer> bottleNeckBandwitdhTable =
             new HashMap<Integer, Integer>();
+    private JFrame frame;
+    private int frameWidth;
+    private int frameHeight;
+    private JTextArea textArea;
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
     public Node(int nodeID) {
         this.nodeID = nodeID;
@@ -19,6 +26,7 @@ public class Node extends Thread {
         this.linkCostTable = linkCost;
         this.linkBandwithTable = linkBandwith;
     }
+
 
     public synchronized void receiveUpdate(Message m) throws Exception {
         boolean isUpdated=false;
@@ -35,6 +43,7 @@ public class Node extends Thread {
                 distanceTable.replace(m.getSenderID(), m.getDistanceVector());
             }
 
+            /*
             for (Map.Entry<Integer, Integer> entry : neighbourDV.entrySet()) {
                 if (ownDistanceVector.containsKey(entry.getKey())) {
                     int newDistance = entry.getValue() + linkCostTable.get(m.getSenderID());
@@ -49,13 +58,39 @@ public class Node extends Thread {
 
             if(isUpdated){
                 System.out.println("Node: "+getNodeID()+" is updated");
-                sendUpdate();
+                //sendUpdate();
             }
+
+             */
         } else {
             throw new Exception("received m from not a neighbour");
         }
     }
 
+    public HashMap<Integer,HashMap<Integer,Integer>> updateDistanceTable(){
+        HashMap<Integer,HashMap<Integer,Integer>> oldDistanceTable=(HashMap<Integer,HashMap<Integer,Integer>>)distanceTable.clone();
+        HashMap<Integer,Integer> ownDistanceVector=distanceTable.get(getNodeID());
+        for(Map.Entry<Integer,HashMap<Integer,Integer>> dtEntry:distanceTable.entrySet()){
+            int neighbourId=dtEntry.getKey();
+            if(neighbourId!=getNodeID()){
+                HashMap<Integer,Integer> neighbourDV=dtEntry.getValue();
+                for(Map.Entry<Integer,Integer> dvEntry:neighbourDV.entrySet()){
+                    if (ownDistanceVector.containsKey(dvEntry.getKey())) {
+                        int newDistance = dvEntry.getValue() + linkCostTable.get(neighbourId);
+                        if (newDistance < ownDistanceVector.get(dvEntry.getKey())) {
+                            ownDistanceVector.replace(dvEntry.getKey(), newDistance);
+
+                        }
+                    } else {
+                        ownDistanceVector.put(dvEntry.getKey(), dvEntry.getValue() + linkCostTable.get(neighbourId));
+                    }
+                }
+            }
+
+        }
+
+        return oldDistanceTable;
+    }
 
     public synchronized boolean sendUpdate() throws Exception {
 
@@ -76,8 +111,36 @@ public class Node extends Thread {
                     currNeighbour.receiveUpdate(m);
                 }
             }
+            updateDistanceTable();
             return true;
         }
+    }
+    public String distanceTabletoStr(){
+        String distanceTableStr=new String("Distance Table\n");
+        for(Map.Entry<Integer,HashMap<Integer,Integer>> dtEntry:distanceTable.entrySet()){
+            HashMap<Integer,Integer> currDistanceVector=dtEntry.getValue();
+            int currId=dtEntry.getKey();
+            distanceTableStr=distanceTableStr.concat(String.format("From:%2d [",currId));
+            for(Map.Entry<Integer,Integer> distEntry:currDistanceVector.entrySet()){
+                distanceTableStr=distanceTableStr.concat("(to:"+distEntry.getKey()+",dist:"+distEntry.getValue()+")");
+            }
+            distanceTableStr=distanceTableStr.concat("]\n");
+        }
+        return distanceTableStr;
+    }
+    public String forwardTabletoStr(){
+        Hashtable<String, int[]> forwardTable= getForwardingTable();
+        String forwardTableStr=new String("ForwardTable: \n");
+        forwardTableStr=forwardTableStr.concat("Dest   |  Forward\n");
+        for(Map.Entry<String,int[]> forwardEntry:forwardTable.entrySet()){
+            forwardTableStr=forwardTableStr.concat(String.format("%7s",forwardEntry.getKey()));
+            forwardTableStr=forwardTableStr.concat("| (");
+            forwardTableStr=forwardTableStr.concat(String.format("%d",forwardEntry.getValue()[0]));
+            forwardTableStr=forwardTableStr.concat(",");
+            forwardTableStr=forwardTableStr.concat(String.format("%d",forwardEntry.getValue()[1]));
+            forwardTableStr=forwardTableStr.concat(")\n");
+        }
+        return forwardTableStr;
     }
 
     public String toString() {
@@ -86,12 +149,17 @@ public class Node extends Thread {
         Iterator<Integer> itr = neighbours.iterator();
         while (itr.hasNext()) {
             Integer next = itr.next();
-            nodeString.concat(next.toString());
-            nodeString.concat(" ");
-            nodeString.concat(linkCostTable.get(next).toString());
-            nodeString.concat(" ");
-            nodeString.concat(linkBandwithTable.get(next).toString());
+            if(next!=getNodeID()) {
+                nodeString=nodeString.concat("(");
+                nodeString=nodeString.concat(Integer.toString(next));
+                nodeString=nodeString.concat(" ");
+                nodeString=nodeString.concat(Integer.toString(linkCostTable.get(next)));
+                nodeString=nodeString.concat(" ");
+                nodeString=nodeString.concat(Integer.toString(linkBandwithTable.get(next)));
+                nodeString=nodeString.concat(")");
+            }
         }
+        //nodeString=nodeString.concat(forwardTabletoStr());
         return nodeString + "\n";
     }
 
@@ -170,10 +238,52 @@ public class Node extends Thread {
             }
             System.out.println("node "+nodeID+ " is running\n");
         }*/
-        System.out.println("Node " + nodeID + " threadID" + getId() + " is running ");
+        drawJFrame();
+        while(true) {
+            try {
+                sleep(500);
+                textArea.setText(this.toString()+forwardTabletoStr()+distanceTabletoStr());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    public Point calculateFramePos(int nodeId){
+        int rowInd=0;
+        int colPos=0;
+        int screenHeight=(int)screenSize.getHeight()-100;
+        int screenWidth=(int)screenSize.getWidth()-100;
+        int widthSum= nodeId*frameWidth;
+        rowInd=(int)Math.floor((widthSum)/(screenWidth-frameWidth));
+        colPos=(int)((widthSum)%(screenWidth-frameWidth));
+        if(rowInd*frameHeight>screenHeight){
+            rowInd=0;
+        }
+        return new Point(colPos,rowInd*frameHeight);
 
     }
 
+    public void drawJFrame(){
+        this.frameWidth=700;
+        this.frameHeight=400;
+        this.frame=new JFrame("Node: "+getNodeID());
+        //frame.setLayout(new GridBagLayout());
+        frame.setLayout(null);
+        this.textArea =new JTextArea();
+        textArea.setFont(new Font("Serif",Font.PLAIN,14));
+
+        textArea.setBounds(50,25,frameWidth-100,frameHeight-100);
+        textArea.setText(this.toString()+forwardTabletoStr());
+        //textArea.setLocation(200,200);
+        Point start=calculateFramePos(getNodeID());
+        int startx=(int)start.getX();
+        int starty=(int)start.getY();
+        frame.setBounds(startx,starty,frameWidth,frameHeight);
+        frame.add(textArea);
+        frame.setVisible(true);
+    }
 
     public int getNodeID() {
         return nodeID;

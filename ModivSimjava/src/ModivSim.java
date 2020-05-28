@@ -8,19 +8,65 @@ public class ModivSim {
 
     public static void main(String[] args){
         System.out.println("Hello");
-
+        int period=1000;
 
         String filepath="./input/input1.txt";
         HashMap<Integer, ArrayList<int[]>> nodeMap=NodeConstructionHandler.getNodeMapFromText(filepath);
         System.out.println(nodeMap.toString());
         initializeNodeTreads(nodeMap);
+        startNodeThreads();
+
+
+        int convergenceNum=2;
+        for(int i=0;i<convergenceNum;i++) {
+            for (Map.Entry<Integer, Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()) {
+                try {
+                    nodeEntry.getValue().sendUpdate();
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
+        for(Map.Entry<Integer,Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()){
+            String out=nodeEntry.getValue().toString();
+            System.out.println(out);
+            String forwardStr=nodeEntry.getValue().forwardTabletoStr();
+            System.out.println(forwardStr);
+        }
+
+
+
+        FlowSim flowSim=new FlowSim(nodeThreadsTable);
+        flowSim.insertFlow("A",0,3,100);
+        flowSim.insertFlow("B",2,4,100);
+        flowSim.start();
+        System.out.println("finished");
+        /*
+        Timer sendUpdateTimer=new Timer();
+        PeriodicSendUpdateTask sendUpdateTask=new PeriodicSendUpdateTask(period);
+        sendUpdateTimer.schedule(sendUpdateTask,0,sendUpdateTask.getPeriod());
+
+        System.out.println("finished");
+        while(true){
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        */
+
 
 /*        Message m= new Message();
         HashMap<Integer,Integer> hm= new HashMap<Integer,Integer>();
         hm.put(3,50);
         m.setDistanceVector(hm);
         nodeThreadsTable.get(0).receiveUpdate(m);*/
-        System.out.println("finished");
 
 /*        try {
             java.util.concurrent.TimeUnit.SECONDS.sleep(5);
@@ -75,6 +121,13 @@ public class ModivSim {
             nodeThreadsTable.put(currNode.getNodeID(),currNode);
         }
     }
+
+    private static void startNodeThreads(){
+        for(Map.Entry<Integer,Node> nodeEntry:nodeThreadsTable.entrySet()){
+            nodeEntry.getValue().start();
+        }
+    }
+
 
     public static Hashtable<Integer, Node> getNodeThreadsTable() {
         return nodeThreadsTable;
