@@ -18,16 +18,26 @@ public class ModivSim {
 
 
         int convergenceNum=2;
+        int num_rounds = 0;
+        int num_converged = 0;
         for(int i=0;i<convergenceNum;i++) {
             for (Map.Entry<Integer, Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()) {
                 try {
-                    nodeEntry.getValue().sendUpdate();
+                    if(!nodeEntry.getValue().sendUpdate()) {
+                        System.out.println("NODE " + nodeEntry.getValue().getNodeID() + " IS CONVERGED --> ");
+                        num_converged ++;
+                    }
+                    if (num_converged == ModivSim.getNodeThreadsTable().size() - 1) {
+                        System.out.println("\n\nNETWORK IS CONVERGED....\n\n");
+                    }
+                    //nodeEntry.getValue().sendUpdate();
                     Thread.sleep(1000);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+
 
 
         for(Map.Entry<Integer,Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()){
@@ -108,7 +118,7 @@ public class ModivSim {
             Hashtable<Integer,Integer> currLinkcostTable=new Hashtable<Integer,Integer>();
             Hashtable<Integer,Integer> currLinkbandwidthTable=new Hashtable<Integer,Integer>();
             currLinkcostTable.put(entry.getKey(),0);
-            Node currNode=new Node(entry.getKey());
+            Node currNode=new Node(entry.getKey(),  nodeMap.size());
 
             for(int[] neighbourInfo:currList ){
                 if(neighbourInfo.length!=3){
