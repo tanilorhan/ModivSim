@@ -41,7 +41,12 @@ public class ModivSim {
 
         FlowSim flowSim=new FlowSim(nodeThreadsTable);
         flowSim.insertFlow("A",0,3,100);
-        flowSim.insertFlow("B",2,4,100);
+        flowSim.insertFlow("C",0,3,100);
+
+        //flowSim.insertFlow("B",2,4,100);
+        //flowSim.insertFlow("D",2,1,50);
+        //flowSim.insertFlow("E",0,3,100);
+        flowSim.insertFlow("F",0,3,100);
         flowSim.start();
         System.out.println("finished");
         /*

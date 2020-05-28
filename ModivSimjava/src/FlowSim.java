@@ -8,14 +8,19 @@ public class FlowSim extends Thread{
     //for every node, holds how many seconds the link is busy
     private Hashtable<Integer, HashMap<Integer, Integer>> busyLinkTable = new Hashtable<Integer, HashMap<Integer, Integer>>();
     private ArrayList<Flow> flowList=new ArrayList<Flow>();
-
+    private ArrayList<Flow> enquedFlowList=new ArrayList<Flow>();
     public FlowSim(Hashtable<Integer, Node> nodeThreadsTable) {
         this.nodeThreadsTable = nodeThreadsTable;
     }
 
     public void run(){
-
+        int i=0;
         while(true) {
+            if(!flowList.isEmpty()){
+                i++;
+                System.out.println("Step "+i);
+            }
+
             for (Flow currFlow : flowList) {
                 System.out.println(activeFlow_toString(currFlow));
                 updateBusyLinkTable(currFlow);
@@ -26,7 +31,10 @@ public class FlowSim extends Thread{
 //                }
             }
             flowList.removeIf(flow -> flow.getRemainDuration()<=0);
-
+            if(!enquedFlowList.isEmpty()) {
+                System.out.println("enqued flows: " + enquedFlowList.toString());
+            }
+            dequeFlows();
             try {
                 sleep(1000);
             } catch (InterruptedException e) {
@@ -43,7 +51,30 @@ public class FlowSim extends Thread{
             Flow flow=new Flow(label,src,dest,size,path,duration);
             flowList.add(flow);
         }else{
-            System.out.println("cannot find a flow path available");
+            System.out.println("Cannot find a flow path available,will enqueue flow "+label);
+            enquedFlowList.add(new Flow(label,src,dest,size));
+        }
+    }
+
+    public void dequeFlows(){
+        ArrayList<Flow> dequeList=new ArrayList<Flow>();
+        for(Flow flow:enquedFlowList){
+            if(findFlowPath(flow.getLabel(),flow.getSrc(),flow.getDest(),flow.getSize())!=null){
+                dequeList.add(flow);
+            }
+        }
+        enquedFlowList.removeAll(dequeList);
+
+        for(Flow flow:dequeList){
+            if(findFlowPath(flow.getLabel(),flow.getSrc(),flow.getDest(),flow.getSize()) != null){
+                ArrayList<Integer> path=findFlowPath(flow.getLabel(),flow.getSrc(),flow.getDest(),flow.getSize());
+                int duration=insertFlowIntoBusyLinkTable(path,flow.getSize());
+                flow.setRemainDuration(duration);
+                flow.setPath(path);
+                flowList.add(flow);
+            }else{
+                enquedFlowList.add(flow);
+            }
         }
     }
 
@@ -166,6 +197,7 @@ public class FlowSim extends Thread{
         if (forwardNodeAvail) {
             System.out.println(path.toString());
             return path;
+
         }
         return null;
     }
