@@ -11,6 +11,7 @@ public class ModivSim {
         int period=1000;
 
         String filepath="./input/input1.txt";
+        String flowPath="./input/inputFlows.txt";
         HashMap<Integer, ArrayList<int[]>> nodeMap=NodeConstructionHandler.getNodeMapFromText(filepath);
         System.out.println(nodeMap.toString());
         initializeNodeTreads(nodeMap);
@@ -18,16 +19,26 @@ public class ModivSim {
 
 
         int convergenceNum=2;
+        int num_rounds = 0;
+        int num_converged = 0;
         for(int i=0;i<convergenceNum;i++) {
             for (Map.Entry<Integer, Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()) {
                 try {
-                    nodeEntry.getValue().sendUpdate();
+                    if(!nodeEntry.getValue().sendUpdate()) {
+                        System.out.println("NODE " + nodeEntry.getValue().getNodeID() + " IS CONVERGED --> ");
+                        num_converged ++;
+                    }
+                    if (num_converged == ModivSim.getNodeThreadsTable().size() - 1) {
+                        System.out.println("\n\nNETWORK IS CONVERGED....\n\n");
+                    }
+                    //nodeEntry.getValue().sendUpdate();
                     Thread.sleep(1000);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+
 
 
         for(Map.Entry<Integer,Node> nodeEntry : ModivSim.getNodeThreadsTable().entrySet()){
@@ -40,8 +51,17 @@ public class ModivSim {
 
 
         FlowSim flowSim=new FlowSim(nodeThreadsTable);
-        flowSim.insertFlow("A",0,3,100);
-        flowSim.insertFlow("B",2,4,100);
+        flowSim.readFlowsFromFile(flowPath);
+
+ /*       flowSim.insertFlow("A",0,3,100);
+        flowSim.insertFlow("C",0,3,100);
+
+        //flowSim.insertFlow("B",2,4,100);
+        //flowSim.insertFlow("D",2,1,50);
+        flowSim.insertFlow("E",0,3,100);
+        flowSim.insertFlow("F",0,3,40);
+        flowSim.insertFlow("G",0,3,40);
+        flowSim.insertFlow("H",0,3,40);*/
         flowSim.start();
         System.out.println("finished");
         /*
@@ -101,7 +121,7 @@ public class ModivSim {
             Hashtable<Integer,Integer> currLinkcostTable=new Hashtable<Integer,Integer>();
             Hashtable<Integer,Integer> currLinkbandwidthTable=new Hashtable<Integer,Integer>();
             currLinkcostTable.put(entry.getKey(),0);
-            Node currNode=new Node(entry.getKey());
+            Node currNode=new Node(entry.getKey(),  nodeMap.size());
 
             for(int[] neighbourInfo:currList ){
                 if(neighbourInfo.length!=3){

@@ -10,7 +10,8 @@ public class Flow {
     private int remainDuration;
 
 
-    public Flow(int src, int dest, int size) {
+    public Flow(String label,int src, int dest, int size) {
+        this.label=label;
         this.src = src;
         this.dest = dest;
         this.size = size;
